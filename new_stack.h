@@ -9,8 +9,15 @@
 #include <string.h>
 #include <unistd.h>
 #include <pthread.h>
+#include <sys/mman.h>
+
+#include<sys/ipc.h>
+#include<sys/shm.h>
 
 #define MAXDATASIZE 1024 // max number of bytes we can get at once
+#define PAGE_SIZE 4096 
+// #define SHM_KEY 0x1234
+
 pthread_mutex_t lock;
 
 
@@ -19,7 +26,32 @@ struct Node {
     char* data;
     struct Node *next;
 };
+
+
+
+// void init(Node * top) {
+//     int shmid;
+//     shmid = shmget(SHM_KEY, PAGE_SIZE, 0644|IPC_CREAT);
+//     if (shmid == -1) {
+//         perror("Shared memory");
+//         return;
+//     }
+//     top = (Node*) shmat(shmid, NULL, 0);
+//     if (top == (void *) -1) {
+//         perror("Shared memory attach");
+//         return;
+//     }
+// }
+
+
+
 Node* top = NULL;
+
+Node* get_top() {
+    
+    return top;
+}
+
 
 
 void splitCommand(char *str, char **splittedWord) {
@@ -34,9 +66,13 @@ void splitCommand(char *str, char **splittedWord) {
 
 // Push() operation on a  stack
 void PUSH(char* data) {
+
+    // init(top);
+
     pthread_mutex_lock(&lock);
     struct Node *newNode;
-    newNode = (struct Node *)malloc(sizeof(struct Node));
+    newNode = (struct Node *) malloc(sizeof(struct Node));
+    // newNode = top++;
     char * cpy = (char*) malloc (sizeof(char)* (strlen(data)+1));
     strcpy(cpy, data);
     newNode->data = cpy; // assign value to the node
@@ -47,10 +83,23 @@ void PUSH(char* data) {
     }
     top = newNode; // top always points to the newly created node
     pthread_mutex_unlock(&lock);
-    printf("Node is Inserted\n\n");
+    printf("Node is Inserted\n%p\n", newNode);
 }
 
 char* POP() {
+
+    // int shmid;
+    // shmid = shmget(SHM_KEY, PAGE_SIZE, 0644|IPC_CREAT);
+    // if (shmid == -1) {
+    //     perror("Shared memory");
+    //     return "error";
+    // }
+    // Node * top = (Node*) shmat(shmid, NULL, 0);
+    // if (top == (void *) -1) {
+    //     perror("Shared memory attach");
+    //     return "error";
+    // }
+
     pthread_mutex_lock(&lock);
     if (top == NULL) {
         printf("\nStack Underflow\n");
@@ -68,6 +117,18 @@ char* POP() {
 }
 
 void display() {
+    // int shmid;
+    // shmid = shmget(SHM_KEY, PAGE_SIZE, 0644|IPC_CREAT);
+    // if (shmid == -1) {
+    //     perror("Shared memory");
+    //     return;
+    // }
+    // Node * top = (Node*) shmat(shmid, NULL, 0);
+    // if (top == (void *) -1) {
+    //     perror("Shared memory attach");
+    //     return;
+    // }
+
     // Display the elements of the stack
     if (top == NULL) {
         printf("\nStack Underflow\n");
@@ -83,13 +144,25 @@ void display() {
 }
 
 char* TOP() {
+    // int shmid;
+    // shmid = shmget(SHM_KEY, PAGE_SIZE, 0644|IPC_CREAT);
+    // if (shmid == -1) {
+    //     perror("Shared memory");
+    //     return "error";
+    // }
+    // Node * top = (Node*) shmat(shmid, NULL, 0);
+    // if (top == (void *) -1) {
+    //     perror("Shared memory attach");
+    //     return "error";
+    // }
+
     pthread_mutex_lock(&lock);
     // Display the elements of the stack
     if (top == NULL) {
         printf("\nStack Underflow\n");
     } else {
         //printf("The stack is \n");
-        struct Node *temp = top;
+        //struct Node *temp = top;
         //printf("OUTPUT: %s\n", temp->data);
         pthread_mutex_unlock(&lock);
         return top->data;
