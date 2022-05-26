@@ -23,109 +23,7 @@
 #include <stddef.h>
 #include "new_stack.h"
 
-// using namespace std;
-
-// #define PORT "3490"  // the port users will be connecting to
-
-// #define BACKLOG 10   // how many pending connections queue will hold
-
-// #include <limits.h>
-// #include <stdio.h>
-// #include <stdlib.h>
-// #include <string.h>
-// #include <unistd.h>
-// #include <pthread.h>
-// #include <sys/mman.h>
-
-// #include<sys/ipc.h>
-// #include<sys/shm.h>
-
 #define MAXDATASIZE 1024 // max number of bytes we can get at once
-// #define PAGE_SIZE 4096 
-
-// pthread_mutex_t lock;
-
-
-// // Structure to create a node with data and next pointer
-// struct Node {
-//     char data[MAXDATASIZE];
-//     struct Node *next;
-// };
-
-
-// Node* top = (Node*) mmap (NULL, sizeof(Node) * 10000, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
-// int* addr = (int*) mmap (NULL, sizeof(int), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
-
-
-
-
-// void splitCommand(char *str, char **splittedWord) {
-//     for (int i = 0; i < MAXDATASIZE; i++) {
-//         splittedWord[i] = strsep(&str, " ");
-
-//         if (splittedWord[i] == NULL) {
-//             break;
-//         }
-//     }
-// }
-
-// // Push() operation on a  stack
-// void PUSH(char data[MAXDATASIZE]) {
-
-//     pthread_mutex_lock(&lock);
-//     struct Node *newNode;
-//     newNode = (top + (*addr));
-//     strcpy(newNode->data, data);
-//     if (top == NULL) {
-//         newNode->next = NULL;
-//     } else {
-//         newNode->next = top; // Make the node as top
-//     }
-//     pthread_mutex_unlock(&lock);
-//     printf("Node is Inserted\n%p\n", newNode);
-//     (*addr)++;
-// }
-
-// char* POP() {
-
-//     if (*addr > 0) {
-//         (*addr)--;
-//         return (top+(*addr))->data;
-//     }
-    
-//     return NULL;
-// }
-
-// void display() {
-
-//     // Display the elements of the stack
-//     if (top == NULL) {
-//         printf("\nStack Underflow\n");
-//     } else {
-//         printf("The stack is \n");
-//         struct Node *temp = top;
-//         while (temp->next != NULL) {
-//             printf("%s--->", temp->data);
-//             temp = temp->next;
-//         }
-//         printf("%s--->NULL\n\n", temp->data);
-//     }
-// }
-
-// char* TOP() {
-
-//     pthread_mutex_lock(&lock);
-//     // Display the elements of the stack
-//     if (top == NULL) {
-//         printf("\nStack Underflow\n");
-//     } else {
-
-//         pthread_mutex_unlock(&lock);
-//         return (top+(*addr)-1)->data;
-//     }
-//     pthread_mutex_unlock(&lock);
-//     return NULL;
-// }
 
 
 static void *handle_client(void *new_fd) {
@@ -246,8 +144,6 @@ int main(void) {
         exit(1);
     }
 
-    // printf("shared %p\n", top);
-
     printf("server: waiting for connections...\n");
 
     while(1) {  // main accept() loop
@@ -264,17 +160,9 @@ int main(void) {
         printf("server: got connection from %s\n", s);
         
         if (!fork()) { // this is the child process
-            // Node * shared = get_top();
             handle_client(&new_fd);
-            // printf("%p", (void*) shared); 
-            // printf("hey");           
         }
-        // handle_client(&new_fd);
-        // Node * shared = get_top();
-        // shared = (Node*) mmap(NULL, 1024, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
-        // printf("hey");
-        printf("shared %p\n", top);
-        // close(new_fd);  // parent doesn't need this
+        
     }
 
     return 0;

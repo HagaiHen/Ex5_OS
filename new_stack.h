@@ -59,7 +59,7 @@ void PUSH(char data[MAXDATASIZE]) {
     } else {
         newNode->next = top; // Make the node as top
     }
-    printf("Node is Inserted\n%p\n", newNode);
+    printf("Node is Inserted\n");
     (*addr)++;
 
     lock.l_type = F_UNLCK;

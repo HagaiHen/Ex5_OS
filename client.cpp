@@ -76,7 +76,6 @@ int main(int argc, char *argv[]) {
 
     char str[MAXDATASIZE];
     char *splitted[MAXDATASIZE];
-    //struct Stack *stack = createStack(100);
     while (1) {
         printf("Enter Command: ");
         fgets(str, MAXDATASIZE, stdin);
