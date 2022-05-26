@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <sys/mman.h>
 #include <stdlib.h>
+#include <iostream>
 #include <unistd.h>
 #include <errno.h>
 #include <string.h>
@@ -19,185 +20,112 @@
 #include <features.h>
 #include <sys/msg.h>
 #include <pthread.h>
-//#include "main.cpp"
 #include <stddef.h>
-// #include "new_stack.h"
+#include "new_stack.h"
 
-#define PORT "3490"  // the port users will be connecting to
+// using namespace std;
 
-#define BACKLOG 10   // how many pending connections queue will hold
+// #define PORT "3490"  // the port users will be connecting to
 
-//struct Stack *stack = createStack(1000000);
+// #define BACKLOG 10   // how many pending connections queue will hold
 
-//Node* shared = get_top();
+// #include <limits.h>
+// #include <stdio.h>
+// #include <stdlib.h>
+// #include <string.h>
+// #include <unistd.h>
+// #include <pthread.h>
+// #include <sys/mman.h>
 
-#include <limits.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <pthread.h>
-#include <sys/mman.h>
-
-#include<sys/ipc.h>
-#include<sys/shm.h>
+// #include<sys/ipc.h>
+// #include<sys/shm.h>
 
 #define MAXDATASIZE 1024 // max number of bytes we can get at once
-#define PAGE_SIZE 4096 
-#define SHM_KEY 0x1234
+// #define PAGE_SIZE 4096 
 
-pthread_mutex_t lock;
-
-
-// Structure to create a node with data and next pointer
-struct Node {
-    char* data;
-    struct Node *next;
-};
+// pthread_mutex_t lock;
 
 
+// // Structure to create a node with data and next pointer
+// struct Node {
+//     char data[MAXDATASIZE];
+//     struct Node *next;
+// };
 
-void init(Node * top) {
-    int shmid;
-    shmid = shmget(SHM_KEY, PAGE_SIZE, 0644|IPC_CREAT);
-    if (shmid == -1) {
-        perror("Shared memory");
-        return;
-    }
-    top = (Node*) shmat(shmid, NULL, 0);
-    if (top == (void *) -1) {
-        perror("Shared memory attach");
-        return;
-    }
-}
+
+// Node* top = (Node*) mmap (NULL, sizeof(Node) * 10000, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+// int* addr = (int*) mmap (NULL, sizeof(int), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
 
 
 
-Node* top = NULL;
 
-Node* get_top() {
+// void splitCommand(char *str, char **splittedWord) {
+//     for (int i = 0; i < MAXDATASIZE; i++) {
+//         splittedWord[i] = strsep(&str, " ");
+
+//         if (splittedWord[i] == NULL) {
+//             break;
+//         }
+//     }
+// }
+
+// // Push() operation on a  stack
+// void PUSH(char data[MAXDATASIZE]) {
+
+//     pthread_mutex_lock(&lock);
+//     struct Node *newNode;
+//     newNode = (top + (*addr));
+//     strcpy(newNode->data, data);
+//     if (top == NULL) {
+//         newNode->next = NULL;
+//     } else {
+//         newNode->next = top; // Make the node as top
+//     }
+//     pthread_mutex_unlock(&lock);
+//     printf("Node is Inserted\n%p\n", newNode);
+//     (*addr)++;
+// }
+
+// char* POP() {
+
+//     if (*addr > 0) {
+//         (*addr)--;
+//         return (top+(*addr))->data;
+//     }
     
-    return top;
-}
+//     return NULL;
+// }
 
+// void display() {
 
+//     // Display the elements of the stack
+//     if (top == NULL) {
+//         printf("\nStack Underflow\n");
+//     } else {
+//         printf("The stack is \n");
+//         struct Node *temp = top;
+//         while (temp->next != NULL) {
+//             printf("%s--->", temp->data);
+//             temp = temp->next;
+//         }
+//         printf("%s--->NULL\n\n", temp->data);
+//     }
+// }
 
-void splitCommand(char *str, char **splittedWord) {
-    for (int i = 0; i < MAXDATASIZE; i++) {
-        splittedWord[i] = strsep(&str, " ");
+// char* TOP() {
 
-        if (splittedWord[i] == NULL) {
-            break;
-        }
-    }
-}
+//     pthread_mutex_lock(&lock);
+//     // Display the elements of the stack
+//     if (top == NULL) {
+//         printf("\nStack Underflow\n");
+//     } else {
 
-// Push() operation on a  stack
-void PUSH(char* data) {
-
-    // init(top);
-
-    pthread_mutex_lock(&lock);
-    struct Node *newNode;
-    newNode = (struct Node *) malloc(sizeof(struct Node));
-    // newNode = top++;
-    char * cpy = (char*) malloc (sizeof(char)* (strlen(data)+1));
-    strcpy(cpy, data);
-    newNode->data = cpy; // assign value to the node
-    if (top == NULL) {
-        newNode->next = NULL;
-    } else {
-        newNode->next = top; // Make the node as top
-    }
-    top = newNode; // top always points to the newly created node
-    pthread_mutex_unlock(&lock);
-    printf("Node is Inserted\n%p\n", newNode);
-}
-
-char* POP() {
-
-    // int shmid;
-    // shmid = shmget(SHM_KEY, PAGE_SIZE, 0644|IPC_CREAT);
-    // if (shmid == -1) {
-    //     perror("Shared memory");
-    //     return "error";
-    // }
-    // Node * top = (Node*) shmat(shmid, NULL, 0);
-    // if (top == (void *) -1) {
-    //     perror("Shared memory attach");
-    //     return "error";
-    // }
-
-    pthread_mutex_lock(&lock);
-    if (top == NULL) {
-        printf("\nStack Underflow\n");
-        pthread_mutex_unlock(&lock);
-        return NULL;
-    } else {
-        struct Node *temp = top;
-        char * temp_data = top->data;
-        top = top->next;
-        free(temp);
-        pthread_mutex_unlock(&lock);
-        return temp_data;
-    }
-    //return -1;
-}
-
-void display() {
-    // int shmid;
-    // shmid = shmget(SHM_KEY, PAGE_SIZE, 0644|IPC_CREAT);
-    // if (shmid == -1) {
-    //     perror("Shared memory");
-    //     return;
-    // }
-    // Node * top = (Node*) shmat(shmid, NULL, 0);
-    // if (top == (void *) -1) {
-    //     perror("Shared memory attach");
-    //     return;
-    // }
-
-    // Display the elements of the stack
-    if (top == NULL) {
-        printf("\nStack Underflow\n");
-    } else {
-        printf("The stack is \n");
-        struct Node *temp = top;
-        while (temp->next != NULL) {
-            printf("%s--->", temp->data);
-            temp = temp->next;
-        }
-        printf("%s--->NULL\n\n", temp->data);
-    }
-}
-
-char* TOP() {
-    // int shmid;
-    // shmid = shmget(SHM_KEY, PAGE_SIZE, 0644|IPC_CREAT);
-    // if (shmid == -1) {
-    //     perror("Shared memory");
-    //     return "error";
-    // }
-    // Node * top = (Node*) shmat(shmid, NULL, 0);
-    // if (top == (void *) -1) {
-    //     perror("Shared memory attach");
-    //     return "error";
-    // }
-
-    pthread_mutex_lock(&lock);
-    // Display the elements of the stack
-    if (top == NULL) {
-        printf("\nStack Underflow\n");
-    } else {
-        //printf("The stack is \n");
-        //struct Node *temp = top;
-        //printf("OUTPUT: %s\n", temp->data);
-        pthread_mutex_unlock(&lock);
-        return top->data;
-    }
-    pthread_mutex_unlock(&lock);
-    return NULL;
-}
+//         pthread_mutex_unlock(&lock);
+//         return (top+(*addr)-1)->data;
+//     }
+//     pthread_mutex_unlock(&lock);
+//     return NULL;
+// }
 
 
 static void *handle_client(void *new_fd) {
@@ -206,31 +134,23 @@ static void *handle_client(void *new_fd) {
     char str[MAXDATASIZE];
     char get[MAXDATASIZE];
     char *splitted[MAXDATASIZE];
-    //struct Stack *stack = createStack(100);
-
+    
     while (1) {
         recv(sock,str,MAXDATASIZE,0);
-        //printf("Enter Command: ");
-        //fgets(str, MAX_CHARS, stdin);
         splitCommand(str, splitted);
         if (!strcmp(splitted[0], "PUSH")) {
             int size = strlen(splitted[1]);
             splitted[1][size - 1] = 0;
-            //sleep(1);
-            //for (int i = 0; i < 500000; i++) {
-                //printf("%d ", i);
-                PUSH(splitted[1]);
-            //}
+            PUSH(splitted[1]);
         }
 
-        if (!strcmp(splitted[0], "POP\n")) { //TODO: remove \n
-            //char str[MAX_CHARS];
+        if (!strcmp(splitted[0], "POP\n")) {
             if(POP() != NULL) {
                 printf("popped from stack\n");
             }
         }
 
-        if (!strcmp(splitted[0], "TOP\n")) { //TODO: remove \n
+        if (!strcmp(splitted[0], "TOP\n")) {
             sleep(1);
             send(sock, TOP(), MAXDATASIZE, 0);
         }
@@ -239,8 +159,6 @@ static void *handle_client(void *new_fd) {
         }
 
     }
-    //clear(stack);
-    //free(stack);
 
     return NULL;
 }
@@ -265,7 +183,7 @@ void *get_in_addr(struct sockaddr *sa) {
 }
 
 int main(void) {
-    top = (Node*) mmap(NULL, 4096, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+    
     int sockfd, new_fd;  // listen on sock_fd, new connection on new_fd
     struct addrinfo hints, *servinfo, *p;
     struct sockaddr_storage their_addr; // connector's address information
